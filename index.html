@@ -57,11 +57,11 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/Virtual-Chat-Partner_WebGL.loader.js";
+      var loaderUrl = buildUrl + "/vcp_WebGL.loader.js";
       var config = {
-        dataUrl: buildUrl + "/Virtual-Chat-Partner_WebGL.data",
-        frameworkUrl: buildUrl + "/Virtual-Chat-Partner_WebGL.framework.js",
-        codeUrl: buildUrl + "/Virtual-Chat-Partner_WebGL.wasm",
+        dataUrl: buildUrl + "/vcp_WebGL.data",
+        frameworkUrl: buildUrl + "/vcp_WebGL.framework.js",
+        codeUrl: buildUrl + "/vcp_WebGL.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Yu5h1 Studio",
         productName: "Virtual Chat Partner",
@@ -98,7 +98,7 @@
         canvas.style.height = "1280px";
       }
 
-      canvas.style.background = "url('" + buildUrl + "/Virtual-Chat-Partner_WebGL.jpg') center / cover";
+      canvas.style.background = "url('" + buildUrl + "/vcp_WebGL.jpg') center / cover";
       loadingBar.style.display = "block";
 
       var script = document.createElement("script");
@@ -109,7 +109,7 @@
               }).then((unityInstance) => {
                 loadingBar.style.display = "none";
                 fullscreenButton.onclick = () => {
-                  unityInstance.SetFullscreen(1);
+                  document.makeFullscreen('unity-container');
                 };
               }).catch((message) => {
                 alert(message);
