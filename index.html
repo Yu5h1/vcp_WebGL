@@ -19,7 +19,7 @@
       <div id="unity-warning"> </div>
       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
-        <div id="unity-fullscreen-button"></div>
+        <!-- <div id="unity-fullscreen-button"></div> -->
         <div id="unity-build-title">Virtual Chat Partner</div>
       </div>
     </div>
@@ -29,7 +29,7 @@
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
-      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      <!-- var fullscreenButton = document.querySelector("#unity-fullscreen-button"); -->
       var warningBanner = document.querySelector("#unity-warning");
 
       // Shows a temporary message banner/ribbon for a few seconds, or
@@ -108,9 +108,22 @@
           progressBarFull.style.width = 100 * progress + "%";
               }).then((unityInstance) => {
                 loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => {
-                  document.makeFullscreen('unity-container');
-                };
+                <!-- fullscreenButton.onclick = () => { -->
+                  <!-- document.makeFullscreen('unity-container'); -->
+                <!-- }; -->
+				
+				    // ✅ 在 Unity 啟動後，監聽用戶觸控事件解鎖音訊
+    document.addEventListener("click", () => {
+      if (!window.audioCtx) {
+        window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      window.audioCtx.resume().then(() => {
+        console.log("✅ AudioContext 已解鎖");
+      }).catch(err => {
+        console.error("❌ AudioContext 解鎖失敗:", err);
+      });
+    }, { once: true });  // 確保只執行一次
+				
               }).catch((message) => {
                 alert(message);
               });
