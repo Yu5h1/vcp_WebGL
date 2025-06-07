@@ -7,30 +7,53 @@
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
 	
-	    <!-- 🔁 版本偵測腳本 -->
-    <script>
-      const LOCAL_VERSION_KEY = "webgl_version";
+<script>
+  (async () => {
+    const VERSION_KEY = "webgl_version";
 
-      fetch("version.json", { cache: "no-store" })
-        .then((res) => res.json())
-        .then((serverVersion) => {
-          const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
-          if (localVersion && localVersion !== serverVersion.version) {
-            console.log("🌀 偵測到新版本，清除快取並重新載入");
-            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion.version);
-            location.reload(); // 強制從伺服器重載
-          } else if (!localVersion) {
-            console.log("✅ 第一次進入，紀錄版本：" + serverVersion.version);
-            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion.version);
-			location.reload();
-          } else {
-            console.log("✅ 版本一致，繼續執行");
-          }
-        })
-        .catch((err) => {
-          console.warn("⚠️ 無法取得版本資訊，跳過版本檢查", err);
-        });
-    </script>
+    try {
+      const res = await fetch("version.json", { cache: "no-store" });
+      if (!res.ok) {
+        console.warn("⚠️ 無法讀取 version.json，跳過版本檢查");
+        return;
+      }
+
+      const { version } = await res.json();
+      const localVersion = localStorage.getItem(VERSION_KEY);
+
+      if (!localVersion) {
+        console.log(`🆕 第一次載入，儲存版本：${version}`);
+        localStorage.setItem(VERSION_KEY, version);
+        location.reload(); // reload 確保使用最新版資源
+        return;
+      }
+
+      if (localVersion !== version) {
+        console.log(`🔁 偵測到版本變動 ${localVersion} → ${version}，清除 Unity 快取`);
+
+        try {
+          const req = indexedDB.deleteDatabase("UnityCache");
+          req.onsuccess = req.onerror = req.onblocked = () => {
+            console.log("🧹 UnityCache 已清除");
+            localStorage.setItem(VERSION_KEY, version);
+            location.reload(); // reload 使用新版本
+          };
+        } catch (e) {
+          console.warn("⚠️ 清除 IndexedDB 失敗，強制重載");
+          localStorage.setItem(VERSION_KEY, version);
+          location.reload();
+        }
+
+        return;
+      }
+
+      console.log(`✅ 版本一致 [${version}]，繼續執行`);
+
+    } catch (err) {
+      console.warn("❌ 發生錯誤，跳過版本檢查", err);
+    }
+  })();
+</script>
 	
   </head>
   <body>
@@ -46,9 +69,13 @@
       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
         <!-- <div id="unity-fullscreen-button"></div> -->
+		<div id="reload-button">清除快取並重新載入</div>
         <div id="unity-build-title">Virtual Chat Partner</div>
       </div>
     </div>
+	
+	<!-- <button onclick= style="font-size: 30px; padding: 8px 16px;" >清除快取並重新載入</button> -->
+	
     <script>
 
       var container = document.querySelector("#unity-container");
@@ -57,6 +84,7 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       <!-- var fullscreenButton = document.querySelector("#unity-fullscreen-button"); -->
       var warningBanner = document.querySelector("#unity-warning");
+	  var reloadButton = document.querySelector("#reload-button");
 
       // Shows a temporary message banner/ribbon for a few seconds, or
       // a permanent error message on top of the canvas if type=='error'.
@@ -137,6 +165,12 @@
                 <!-- fullscreenButton.onclick = () => { -->
                   <!-- document.makeFullscreen('unity-container'); -->
                 <!-- }; -->
+				
+				reloadButton.onclick = () => {
+					localStorage.removeItem('webgl_version'); 
+					indexedDB.deleteDatabase('UnityCache'); 
+					location.reload();
+                };
 				
 				    // ✅ 在 Unity 啟動後，監聽用戶觸控事件解鎖音訊
     document.addEventListener("click", () => {
