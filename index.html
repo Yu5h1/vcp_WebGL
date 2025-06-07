@@ -6,6 +6,32 @@
     <title>Unity WebGL Player | Virtual Chat Partner</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+	
+	    <!-- 🔁 版本偵測腳本 -->
+    <script>
+      const LOCAL_VERSION_KEY = "webgl_version";
+
+      fetch("version.json", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((serverVersion) => {
+          const localVersion = localStorage.getItem(LOCAL_VERSION_KEY);
+          if (localVersion && localVersion !== serverVersion.version) {
+            console.log("🌀 偵測到新版本，清除快取並重新載入");
+            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion.version);
+            location.reload(); // 強制從伺服器重載
+          } else if (!localVersion) {
+            console.log("✅ 第一次進入，紀錄版本：" + serverVersion.version);
+            localStorage.setItem(LOCAL_VERSION_KEY, serverVersion.version);
+			location.reload();
+          } else {
+            console.log("✅ 版本一致，繼續執行");
+          }
+        })
+        .catch((err) => {
+          console.warn("⚠️ 無法取得版本資訊，跳過版本檢查", err);
+        });
+    </script>
+	
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -65,7 +91,7 @@
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Yu5h1 Studio",
         productName: "Virtual Chat Partner",
-        productVersion: "0.0.1",
+        productVersion: "1.0.0",
         showBanner: unityShowBanner,
       };
 
